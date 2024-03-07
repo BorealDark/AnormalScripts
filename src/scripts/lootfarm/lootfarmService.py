@@ -46,7 +46,7 @@ class LootFarmService:
         return LootfarmApi().getAllSteamPricesGame(gameId, isCompact, compactValue)
     
     def getProfitableLootfarmItems(self, lootFarmItemsReduced, SteamPrices, rateUSDEUR, gameId):
-        profitableLootfarmItems = pd.DataFrame(columns=[u.ITEM_NAME,u.STEAM_PRICE, u.LOOTFARM_PRICE, u.PROFIT, u.VOLUME, u.LOOTFARM_QUANTITY])
+        profitableLootfarmItems = pd.DataFrame(columns=[u.ITEM_NAME,u.STEAM_PRICE, u.LOOTFARM_PRICE, u.VOLUME, u.LOOTFARM_QUANTITY, u.SCM_BALANCE_RATE])
         
         for index, row in lootFarmItemsReduced.iterrows():
             try: 
@@ -66,21 +66,27 @@ class LootFarmService:
                             lootFarmPrice = math.ceil(((row['lootfarm_price']*1.03)*100))/100
                         else: lootFarmPrice = row['lootfarm_price']
 
-                        profit = 0 #ADD YOUR FORMULA HERE
+
+                        scmBalanceRate = 0
+                        loss = lootFarmPrice/(steamPrice*0.88)
+                        keyRate = u.KEY_PRICE_LOOTFARM / u.KEY_PRICE_USD
+
+                        scmBalanceRate = round(keyRate/loss, 2)
+
                         if salesAVG >= u.MINIMUM_DAILY_SALES_SCM:
                             newRow = pd.DataFrame({u.ITEM_NAME: [itemName],
                                                     u.STEAM_PRICE: [steamPrice], 
                                                     u.LOOTFARM_PRICE: [lootFarmPrice],
-                                                    u.PROFIT: [profit],
                                                     u.VOLUME: [salesAVG],
                                                     u.LOOTFARM_QUANTITY: [row['lootfarm_quantity']],
+                                                    u.SCM_BALANCE_RATE: [scmBalanceRate]
                                                     })
                             
                             profitableLootfarmItems = pd.concat([profitableLootfarmItems, newRow])
                         break
             except: print("Item "+itemName+" has no price")
 
-        profitableLootfarmItems = profitableLootfarmItems.sort_values(by=['profit'], ascending=False)
+        profitableLootfarmItems = profitableLootfarmItems.sort_values(by=[u.SCM_BALANCE_RATE], ascending=False)
         print(profitableLootfarmItems)
         return profitableLootfarmItems
                

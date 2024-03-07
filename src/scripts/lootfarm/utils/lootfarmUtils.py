@@ -33,6 +33,8 @@ STEAM_FEE = 0.88
 RATE = "rate"
 LOOTFARM_VALUE = 'lootfarm_value'
 STOCK_TO_SELL = 'stock_to_sell'
+SCM_BALANCE_RATE = 'scm_bal_rate'
+
 
 def getCurrency(rates, currency):
     for index, row in rates.iterrows():
@@ -42,7 +44,7 @@ def getCurrency(rates, currency):
 ######################
 #VALORES MODIFICABLES#
 ######################
-KEY_PRICE_USD = 1.51
+KEY_PRICE_USD = 1.68
 KEY_PRICE_LOOTFARM = 2.50
 
 MINIMUM_TF_PRICE = 0
