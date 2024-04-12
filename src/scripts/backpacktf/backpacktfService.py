@@ -110,7 +110,7 @@ class BackpacktfService:
                 isGoodItem = False
             if isGoodItem and "Strangifier" in itemName:
                 isGoodItem = False
-            if itemPrice < 0.50:
+            if itemPrice < u.MINIMUM_SCM_PRICE:
                 isGoodItem = False
             
             if isGoodItem:
@@ -129,7 +129,7 @@ class BackpacktfService:
         cont = 0
         profitableScmProfitableItems = pd.DataFrame(columns=[u.SCM_NAME,u.SCM_PRICE, u.BP_PRICE, u.SCM_PROFIT, u.AVG_SOLD])
 
-        scmItemsVolume = self.getScmItemsVolume(scmItems, 3)
+        scmItemsVolume = self.getScmItemsVolume(scmItems, u.MINIMUM_DAILY_SALES)
         print(scmItemsVolume)
         scmItemsProcessed = self.processScmItemsForBot(scmItemsVolume)
         print(scmItemsProcessed)
@@ -161,27 +161,7 @@ class BackpacktfService:
                             BpPrice = self.getSellPrice(itemName, keyPrice)
 
                         print (itemName + " PRICE = "+str(BpPrice)+" keys")
-
-                        """
-                        for listing in itemPrices:
-                            #print(itemPrices[listing])
-                            if itemPrices[listing]['intent'] == "buy":
-                                if not priceFound:
-                                    BpPrice = itemPrices[listing]['pricekeys'] + itemPrices[listing]['priceref']/63
-                                    priceFound = True
-                                if itemPrices[listing]['isgladiatorbot'] == True: 
-                                    print(itemName)
-                                    print(itemPrices[listing]['pricekeys'])
-                                    print(itemPrices[listing]['priceref']/63)
-                                    BpPrice = itemPrices[listing]['pricekeys'] + itemPrices[listing]['priceref']/63
-                                    break
-                        """
-                        if BpPrice != 0:
-                            if scmPrice <= 0.21:
-                                profit = ((((((scmPrice-0.02)/2.35)*2.49)*0.90)/1.51))/BpPrice
-                            else:
-                                profit = ((((((scmPrice/1.15)/2.35)*2.49)*0.90)/1.51))/BpPrice
-                        else: profit = 0
+                        profit = 1/BpPrice*scmPrice*0.88/u.KEY_PRICE_USD
 
                             
                         #print(itemName)
@@ -248,69 +228,6 @@ class BackpacktfService:
         itemPrices = self.processSnapshot(snapshot)
         itemSellPrice = self.getBpSellPrice(itemPrices, keyRef)
         return itemSellPrice
-    
-
-    def getBackpackToLootfarm(self, tf2LootfarmItems):
-        backpackToLootfarm = pd.DataFrame(columns=[u.NAME,u.BACKPACK_PRICE, u.LOOTFARM_PRICE, u.VALUE, u.STOCK_TO_SELL])
-        keyRef = self.getKeyPrice()
-        with alive_bar(len(tf2LootfarmItems)) as bar:
-            for item in tf2LootfarmItems:
-                itemName = item['name']
-                print(itemName)
-                stockToSell = item['max'] - item['have']
-                lootfarmPrice = math.floor(item['price']/1.03)/100
-                cont = 0
-                print(lootfarmPrice)
-                print(stockToSell)
-                if lootfarmPrice >= 1 and stockToSell > 0 and "Unusual" not in itemName:
-                    try:
-                        itemSellPrice = self.getSellPrice(itemName, keyRef)
-                        print("Item = " + str(itemName) + " sell order price = " + str(itemSellPrice))
-                        value = lootfarmPrice/itemSellPrice
-                        newRow = pd.DataFrame({u.NAME: [itemName],
-                                        u.BACKPACK_PRICE: [itemSellPrice], 
-                                        u.LOOTFARM_PRICE: [lootfarmPrice],
-                                        u.VALUE: [value],
-                                        u.STOCK_TO_SELL: [stockToSell],
-                                        })
-                        backpackToLootfarm = pd.concat([backpackToLootfarm, newRow])
-                        if cont > 50: break
-
-                    except Exception as e:
-                        print ("Failed checking item " + itemName, e)
-                cont = cont + 1
-                bar()
-        return backpackToLootfarm
-    
-    def getBackpackToCstrade(self, tf2LootfarmItems):
-        backpackToCstrade = pd.DataFrame(columns=[u.NAME,u.BACKPACK_PRICE, u.CSTRADE_PRICE, u.VALUE, u.STOCK_TO_SELL])
-        keyRef = self.getKeyPrice()
-        with alive_bar(len(tf2LootfarmItems)) as bar:
-            for itemName in tf2LootfarmItems:
-                print(itemName)
-                stockToSell = tf2LootfarmItems[itemName]['can_take']
-                cstradePrice = math.floor(tf2LootfarmItems[itemName]['price']/1.07)
-                cont = 0
-                print(cstradePrice)
-                print(stockToSell)
-                if cstradePrice >= 1 and stockToSell > 0 and "Unusual" not in itemName:
-                    try:
-                        itemSellPrice = self.getSellPrice(itemName, keyRef)
-                        print("Item = " + str(itemName) + " sell order price = " + str(itemSellPrice))
-                        value = cstradePrice/itemSellPrice
-                        newRow = pd.DataFrame({u.NAME: [itemName],
-                                        u.BACKPACK_PRICE: [itemSellPrice], 
-                                        u.CSTRADE_PRICE: [cstradePrice],
-                                        u.VALUE: [value],
-                                        u.STOCK_TO_SELL: [stockToSell],
-                                        })
-                        backpackToCstrade = pd.concat([backpackToCstrade, newRow])
-
-                    except Exception as e:
-                        print ("Failed checking item " + itemName, e)
-
-                bar()
-        return backpackToCstrade
     
     def getBackpackPricesMp(self, mpItems):
         keyPrice = self.getBpBuyPrice(self.processSnapshot(self.getBackpackSnapshot(u.KEY)), True, None, False)

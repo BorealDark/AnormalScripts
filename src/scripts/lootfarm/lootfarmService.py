@@ -89,6 +89,7 @@ class LootFarmService:
         profitableLootfarmItems = profitableLootfarmItems.sort_values(by=[u.SCM_BALANCE_RATE], ascending=False)
         print(profitableLootfarmItems)
         return profitableLootfarmItems
+
                
     
     def getCurrency(self, rates, currency):
