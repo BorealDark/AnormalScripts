@@ -59,6 +59,9 @@ class dataManegerUtils:
     PATH_PROFITABLE_SCM_ITEMS = "../excels/backpacktf/profitableScmItems/"
     SCM_PROFITABLE_TF2_ITEMS_BUY_ORDERS = "scm_profitable_tf2_items_bo"
     SCM_PROFITABLE_TF2_ITEMS_SELL_ORDERS = "scm_profitable_tf2_items_so"
+    
+    PATH_CSGOMARKET = "../excels/marketcsgo/"
+
 
 
 

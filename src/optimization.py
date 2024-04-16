@@ -2,6 +2,7 @@ from scripts.pricestf import *
 from scripts.marketplacetf import *
 from scripts.lootfarm import *
 from scripts.backpacktf import *
+from scripts.csgomarket import *
 from datamanager.dataManager import *
 from datamanager.dataManegerUtils import *
 
@@ -100,6 +101,16 @@ class Optimization():
         scmProfitableItems = BackpacktfService().getScmProfitableItems(scmItems, rateUSDEUR, False)
         DataManegerService().dataToExcel(dataManegerUtils().PATH_PROFITABLE_SCM_ITEMS+dataManegerUtils.SCM_PROFITABLE_TF2_ITEMS_SELL_ORDERS+dataManegerUtils.XSLX_EXTENSION, dataManegerUtils.SCM_PROFITABLE_TF2_ITEMS_SELL_ORDERS, scmProfitableItems)
      
+    def csgomarket(self):
+        scmItems = LootFarmService().getAllSteamPricesGame(730, False, None)
+        csgomarketItems = CsgomarketService().getAllItems("sell")
+        csgomarketBuyOrders = CsgomarketService().getAllItems("buy")
+
+        csgomarketScmData = CsgomarketService().csgomarketScmDataProcesor(csgomarketItems, csgomarketBuyOrders, scmItems)
+
+        for key, value in csgomarketScmData.items():
+            print("Creating excel "+str(key))
+            DataManegerService().dataToExcel(dataManegerUtils().PATH_CSGOMARKET+str(key)+dataManegerUtils.XSLX_EXTENSION, str(key), value)
 
 
         

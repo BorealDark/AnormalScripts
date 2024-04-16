@@ -21,6 +21,8 @@ parser.add_argument('-lt', '--lootfarmtf', help = "creates an Excel spreadsheet 
 parser.add_argument('-bpscm', '--bptoscm', help = 'Profitable TF2 items (BACKPACK BUY ORDER) to sell on the scm', required=False, action='store_true')
 parser.add_argument('-bpsoscm', '--bpsotoscm', help = 'Profitable TF2 items (BACKPACK SELL ORDER) to sell on the scm', required=False, action='store_true')
 
+#CSGOMARKET
+parser.add_argument('-csm', "--csgomarket", help = "csgomarket <-> scm", required=False, action='store_true'),
 
 
 def parse():
@@ -67,4 +69,8 @@ if __name__ == '__main__':
     if(args.bpsotoscm):
         print("Getting all the profitable tf2 items from bp sell orders to sell on scm")
         Optimization().bpsotoscm()
+    
+    if(args.csgomarket):
+        print("Creating csgomarket-steam spreadsheet")
+        Optimization().csgomarket()
 
