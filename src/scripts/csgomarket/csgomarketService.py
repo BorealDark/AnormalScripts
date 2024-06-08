@@ -3,6 +3,8 @@ from .utils import csgomarketUtils as u
 import pandas as pd
 from datetime import datetime
 from alive_progress import alive_bar
+import time
+import math
 
 
 class CsgomarketService:
@@ -10,8 +12,30 @@ class CsgomarketService:
         return CsgomarketApi().getAllItems(str)
         
     
-    def getSellableSteamPrice(self, singleItemData):
-        return 0
+    def getSellableSteamPrice(self, singleItemData, volume):
+        price = 0
+        cont = 0
+        buyOrderPrice = singleItemData['histogram']['highest_buy_order']
+        #print ("buy order price = "+str(buyOrderPrice))
+        #print(singleItemData['histogram']['sell_order_array'])
+        for prices in singleItemData['histogram']['sell_order_array']:
+            if volume < 5:
+                return prices['price']
+            else:
+                if price == 0: price = prices['price']
+                else:  
+                    #print(prices['price'])
+                    newPrice = prices['price']
+
+                    if buyOrderPrice*1.03 < newPrice:
+                        cont = cont + prices['quantity']
+                        if newPrice > price*1.05 or cont <= 3: price = newPrice
+                        else: 
+                            #print("Selected price = "+ str(price))
+                            return price 
+                    else: None
+        #print("Selected price = "+ str(price))
+        return price
 
     def checkIsBannedItem(self, itemName):
         for bannedItem in u.BANNED_ITEMS:
@@ -42,7 +66,7 @@ class CsgomarketService:
         return volume
 
 
-    def csgomarketScmDataProcesor(self, csgomarketData, csgomarketBuyOrders, scmItems):
+    def csgomarketScmDataProcesor(self, csgomarketData, csgomarketBuyOrders, scmItems, isFast, checkSalesCsgomarket):
         csgomarketSoScmSo = pd.DataFrame(columns=[u.ITEM_NAME, u.MARKETCSGO_PRICE_SO, u.STEAM_PRICE_SO_7D, u.STEAM_PRICE_SO_LAST, u.STEAM_VOLUME, u.CSGOMARKET_VOLUME, u.PROFIT_7D, u.PROFIT_NOW])
         csgomarketSoScmBo = pd.DataFrame(columns=[u.ITEM_NAME, u.MARKETCSGO_PRICE_SO, u.STEAM_PRICE_BO, u.STEAM_VOLUME, u.CSGOMARKET_VOLUME, u.PROFIT])
 
@@ -52,70 +76,116 @@ class CsgomarketService:
         #csgomarketBuyOrdersDict = self.getDictCsgomarketBuyOrders(csgomarketBuyOrders)
         
         breakCont = 0
-        with alive_bar(len(csgomarketData['items'])) as bar:
-            for csgomarketItem in csgomarketData['items']:
-                csgomarketItemName = csgomarketItem['market_hash_name']
-                csgomarketPrice = float(csgomarketItem['price'])
-                if not self.checkIsBannedItem(csgomarketItemName) and csgomarketPrice >= 1 and csgomarketPrice <= 1000:
-                    #csgomarketBuyOrder = csgomarketBuyOrdersDict[csgomarketItemName]
-                    csgomarketVolume = self.getVolumeSalesMarketcsgo(csgomarketItemName)
-                    
-                    for steamItem in scmItems['data']:
-                        if steamItem['market_hash_name'] == csgomarketItemName:
-                            scmPrice7d = steamItem['prices']['safe_ts']['last_7d']
-                            steamVolume = steamItem['prices']['sold']['last_24h']
+        cont = 0
+        with alive_bar(len(csgomarketBuyOrders['items'])) as bar:
+            for csgomarketItem in csgomarketBuyOrders['items']:
+                try:
+                    csgomarketItemName = csgomarketItem['market_hash_name']
+                    csgomarketPrice = float(csgomarketItem['price'])
+                    if not self.checkIsBannedItem(csgomarketItemName) and csgomarketPrice >= 1 and csgomarketPrice <= 5:
+                        #csgomarketBuyOrder = csgomarketBuyOrdersDict[csgomarketItemName]
+                        if checkSalesCsgomarket == True:
+                            csgomarketVolume = self.getVolumeSalesMarketcsgo(csgomarketItemName)
+                        else: csgomarketVolume = 0
+                        
+                        for steamItem in scmItems['data']:
+                            if steamItem['market_hash_name'] == csgomarketItemName:
+                                scmPrice7d = steamItem['prices']['safe_ts']['last_24h']
+                                steamVolume = steamItem['prices']['sold']["avg_daily_volume"]
 
-                            singleItemData = CsgomarketApi().getScmData(csgomarketItemName)
+                                print(csgomarketItemName)
+                                if isFast:
+                                    singleItemData = 0
+                                    highestBuyOrder = 0
+                                    sellableSteamPrice = 0
+                                else:
+                                    if cont == 0: now = time.time()
+                                    if cont == u.REQUEST_MINUTE: 
+                                        later = time.time()
+                                        print(now)
+                                        print(later)
+                                        timeSpent = math.ceil(later - now)
+                                        waitTime = 60 - timeSpent
+                                        print(str(u.REQUEST_MINUTE) + " REQUEST MADE IN " + str(timeSpent) +" SECONDS")
 
-                            highestBuyOrder = singleItemData['histogram']['highest_buy_order']
-                            sellableSteamPrice = self.getSellableSteamPrice(singleItemData)
-                            
-                            cstoScmSoProfit7d = (scmPrice7d*0.88)/csgomarketPrice
-                            cstoScmSoProfitNow = (sellableSteamPrice*0.88)/csgomarketPrice
-                            newRowCstoScmSo = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
-                                                        u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
-                                                        u.STEAM_PRICE_SO_7D: [scmPrice7d],
-                                                        u.STEAM_PRICE_SO_LAST: [sellableSteamPrice],
-                                                        u.STEAM_VOLUME: [steamVolume],
-                                                        u.CSGOMARKET_VOLUME: [csgomarketVolume],
-                                                        u.PROFIT_7D: [cstoScmSoProfit7d],
-                                                        u.PROFIT_NOW: [cstoScmSoProfitNow]
-                                                        })
-                            
-                            cstoScmBoProfit = (highestBuyOrder*0.88)/csgomarketPrice
-                            newRowCstoScmBo = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
-                                                        u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
-                                                        u.STEAM_PRICE_BO: [highestBuyOrder],
-                                                        u.STEAM_VOLUME: [steamVolume],
-                                                        u.CSGOMARKET_VOLUME: [csgomarketVolume],
-                                                        u.PROFIT: [cstoScmBoProfit],
-                                                        })
-                            
-                            scmSoToCsProfit7d = csgomarketPrice*0.95/scmPrice7d
-                            newRowScmSoToCs = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
-                                                        u.STEAM_PRICE_SO_7D: [scmPrice7d],
-                                                        u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
-                                                        u.STEAM_VOLUME: [steamVolume],
-                                                        u.CSGOMARKET_VOLUME: [csgomarketVolume],
-                                                        u.PROFIT_7D: [scmSoToCsProfit7d],
-                                                        })
-                            
-                            scmBoToCsProfit = csgomarketPrice*0.95/highestBuyOrder
-                            newRowScmBoToCs = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
-                                                        u.STEAM_PRICE_BO: [highestBuyOrder],
-                                                        u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
-                                                        u.STEAM_VOLUME: [steamVolume],
-                                                        u.CSGOMARKET_VOLUME: [csgomarketVolume],
-                                                        u.PROFIT: [scmBoToCsProfit],
-                                                        })
-                                                        
-                            csgomarketSoScmSo = pd.concat([csgomarketSoScmSo, newRowCstoScmSo])
-                            csgomarketSoScmBo = pd.concat([csgomarketSoScmBo, newRowCstoScmBo])
-                            scmSoCsgomarketSo = pd.concat([scmSoCsgomarketSo, newRowScmSoToCs])
-                            scmBoCsgomarketSo = pd.concat([scmBoCsgomarketSo, newRowScmBoToCs])
-                            break
-                breakCont = breakCont + 1
-                if breakCont > 40: break
+                                        if waitTime > 0:
+                                            print("WAITING " + str(waitTime) + " SECONDS BEFORE MAKING MORE REQUESTS")
+                                            time.sleep(waitTime)
+                                        cont = 0
+
+                                    singleItemData = CsgomarketApi().getScmData(csgomarketItemName)
+                                    highestBuyOrder = singleItemData['histogram']['highest_buy_order']
+                                    sellableSteamPrice = self.getSellableSteamPrice(singleItemData, steamVolume)
+                                    cont = cont + 1
+
+                                
+                                try:
+                                    cstoScmSoProfit7d = (scmPrice7d*0.88)/csgomarketPrice
+                                except Exception as e:
+                                    cstoScmSoProfit7d = 0
+                                    #print("Failed item calculation ", e)
+                                try:
+                                    cstoScmSoProfitNow = (sellableSteamPrice*0.88)/csgomarketPrice
+                                except Exception as e:
+                                    cstoScmSoProfitNow = 0
+                                    #print("Failed item calculation ", e)
+                                newRowCstoScmSo = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
+                                                            u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
+                                                            u.STEAM_PRICE_SO_7D: [scmPrice7d],
+                                                            u.STEAM_PRICE_SO_LAST: [sellableSteamPrice],
+                                                            u.STEAM_VOLUME: [steamVolume],
+                                                            u.CSGOMARKET_VOLUME: [csgomarketVolume],
+                                                            u.PROFIT_7D: [cstoScmSoProfit7d],
+                                                            u.PROFIT_NOW: [cstoScmSoProfitNow]
+                                                            })
+                                
+                                try:
+                                    cstoScmBoProfit = (highestBuyOrder*0.88)/csgomarketPrice
+                                except Exception as e:
+                                    cstoScmBoProfit = 0
+                                    #print("Failed item calculation ", e)
+                                newRowCstoScmBo = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
+                                                            u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
+                                                            u.STEAM_PRICE_BO: [highestBuyOrder],
+                                                            u.STEAM_VOLUME: [steamVolume],
+                                                            u.CSGOMARKET_VOLUME: [csgomarketVolume],
+                                                            u.PROFIT: [cstoScmBoProfit],
+                                                            })
+                                
+                                try: 
+                                    scmSoToCsProfit7d = csgomarketPrice*0.95/scmPrice7d
+                                except Exception as e:
+                                    scmSoToCsProfit7d = 0
+                                    #print("Failed item calculation ", e)
+                                newRowScmSoToCs = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
+                                                            u.STEAM_PRICE_SO_7D: [scmPrice7d],
+                                                            u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
+                                                            u.STEAM_VOLUME: [steamVolume],
+                                                            u.CSGOMARKET_VOLUME: [csgomarketVolume],
+                                                            u.PROFIT_7D: [scmSoToCsProfit7d],
+                                                            })
+                                
+                                try:
+                                    scmBoToCsProfit = csgomarketPrice*0.95/highestBuyOrder
+                                except Exception as e:
+                                    scmBoToCsProfit = 0
+                                    #print("Failed item calculation ", e)
+                                newRowScmBoToCs = pd.DataFrame({u.ITEM_NAME: [csgomarketItemName], 
+                                                            u.STEAM_PRICE_BO: [highestBuyOrder],
+                                                            u.MARKETCSGO_PRICE_SO: [csgomarketPrice],
+                                                            u.STEAM_VOLUME: [steamVolume],
+                                                            u.CSGOMARKET_VOLUME: [csgomarketVolume],
+                                                            u.PROFIT: [scmBoToCsProfit],
+                                                            })
+                                                            
+                                csgomarketSoScmSo = pd.concat([csgomarketSoScmSo, newRowCstoScmSo])
+                                csgomarketSoScmBo = pd.concat([csgomarketSoScmBo, newRowCstoScmBo])
+                                scmSoCsgomarketSo = pd.concat([scmSoCsgomarketSo, newRowScmSoToCs])
+                                scmBoCsgomarketSo = pd.concat([scmBoCsgomarketSo, newRowScmBoToCs])
+                                break
+                    #breakCont = breakCont + 1
+                    #if breakCont > 40: break
+                except Exception as e: print("Failed cheking an item, reason: ", e)
                 bar()
 
 

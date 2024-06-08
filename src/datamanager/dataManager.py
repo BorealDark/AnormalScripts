@@ -6,5 +6,12 @@ class DataManegerService:
         return data
 
     def dataToExcel(self, path, sheetName, data):
-        data.to_excel(path, sheet_name=str(sheetName), index=False)
+        cont = 0
+        while(cont < 100):
+            try: 
+                data.to_excel(path, sheet_name=str(sheetName), index=False)
+                break
+            except Exception as e:
+                print("Failed saving the excel, waiting 10 seconds before trying again...", e)
+            cont = cont + 1
 

@@ -17,5 +17,6 @@ PROFIT_7D = "profit_7d"
 PROFIT_NOW = "profit_now"
 PROFIT = "profit"
 
+REQUEST_MINUTE = 500
 
-BANNED_ITEMS = {"Souvenir", "Autograph", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "Key", "Patch", "Sealed Graffiti"}
+BANNED_ITEMS = {"Souvenir", "Autograph", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024", "Key", "Patch", "Sealed Graffiti", "★"}

@@ -4,8 +4,8 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 
 parser = argparse.ArgumentParser(
-    description='Programa que optimiza diferentes procesos de mi trabajo en Steam.',
-    epilog="Example of use: python .\src\main.py -cs")
+    description='Steam scripts',
+    epilog="Example of use: python .\main.py -csm")
 
 #MARKETPLACE.TF
 parser.add_argument('-mpibp', '--mpinventoryBpPrices', help= "creates an Excel spreadsheet containing a list of items that has to be put for sale on the Marketplace.tf shop (CHECK BP PRICES (PRICES.TF))", required=False, action='store_true')
@@ -22,7 +22,14 @@ parser.add_argument('-bpscm', '--bptoscm', help = 'Profitable TF2 items (BACKPAC
 parser.add_argument('-bpsoscm', '--bpsotoscm', help = 'Profitable TF2 items (BACKPACK SELL ORDER) to sell on the scm', required=False, action='store_true')
 
 #CSGOMARKET
-parser.add_argument('-csm', "--csgomarket", help = "csgomarket <-> scm", required=False, action='store_true'),
+parser.add_argument('-csm', "--csgomarket", help = "csgomarket <-> scm", required=False, action='store_true')
+parser.add_argument('-csmfast', "--csgomarketfast", help = "csgomarket <-> scm FAST (NO CSGOMARKET SALES VOLUME)", required=False, action='store_true')
+parser.add_argument('-csminstant', "--csgomarketinstant", help = "csgomarket <-> scm FAST (NO STEAM BUY ORDERS, NO CSGOMARKET SALES VOLUME)", required=False, action='store_true')
+
+
+
+
+
 
 
 def parse():
@@ -36,7 +43,6 @@ def main():
 
 if __name__ == '__main__':
     args = parser.parse_args()
-
 
     #MARKETPLACE.TF
     if(args.mpinventoryBpPrices):
@@ -72,5 +78,13 @@ if __name__ == '__main__':
     
     if(args.csgomarket):
         print("Creating csgomarket-steam spreadsheet")
-        Optimization().csgomarket()
+        Optimization().csgomarket(False, True)
+    
+    if(args.csgomarketfast):
+        print("Creating csgomarket-steam spreadsheet")
+        Optimization().csgomarket(False, False)
+
+    if(args.csgomarketinstant):
+        print("Creating csgomarket-steam spreadsheet")
+        Optimization().csgomarket(True, False)
 

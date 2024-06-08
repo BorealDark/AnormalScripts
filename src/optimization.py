@@ -101,12 +101,12 @@ class Optimization():
         scmProfitableItems = BackpacktfService().getScmProfitableItems(scmItems, rateUSDEUR, False)
         DataManegerService().dataToExcel(dataManegerUtils().PATH_PROFITABLE_SCM_ITEMS+dataManegerUtils.SCM_PROFITABLE_TF2_ITEMS_SELL_ORDERS+dataManegerUtils.XSLX_EXTENSION, dataManegerUtils.SCM_PROFITABLE_TF2_ITEMS_SELL_ORDERS, scmProfitableItems)
      
-    def csgomarket(self):
+    def csgomarket(self, isFast, checkSalesCsgomarket):
         scmItems = LootFarmService().getAllSteamPricesGame(730, False, None)
         csgomarketItems = CsgomarketService().getAllItems("sell")
         csgomarketBuyOrders = CsgomarketService().getAllItems("buy")
 
-        csgomarketScmData = CsgomarketService().csgomarketScmDataProcesor(csgomarketItems, csgomarketBuyOrders, scmItems)
+        csgomarketScmData = CsgomarketService().csgomarketScmDataProcesor(csgomarketItems, csgomarketBuyOrders, scmItems, isFast, checkSalesCsgomarket)
 
         for key, value in csgomarketScmData.items():
             print("Creating excel "+str(key))

@@ -20,7 +20,8 @@ class CsgomarketApi:
         head = {'content-type': "application/json"}
         uri = u.STEAMAPIS_ITEM_URI_CS2+itemName
         response = requests.get(uri, params=parameters, headers=head).json()
-        time.sleep(0.6)
+        #print(response)
+        #time.sleep(0.12)
         return response
     
     def getCsgomarketItemInfo(self, itemName):
