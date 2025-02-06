@@ -66,7 +66,7 @@ class Optimization():
             lootfarmRustItemsReduced = LootFarmService().reduceLootfarmItems(lootfarmRustItems, gameId)
 
             rustSteamPrices = LootFarmService().getAllSteamPricesGame(gameId, False)
-            print (rustSteamPrices)
+            #print (rustSteamPrices)
         
             profitableRustItems = LootFarmService().getProfitableLootfarmItems(lootfarmRustItemsReduced, rustSteamPrices, rateUSDEUR, gameId)
             #profitableItems = LootFarmService().lootFarmRust(rustSteamPrices)
