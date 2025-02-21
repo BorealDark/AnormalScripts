@@ -133,10 +133,9 @@ apikey.py
 
 bestRustItems.xlsx
 bestRustItemsVolume.xlsx
-*apikey.py*
-*Apikey.py*
-*ApiKey.py*
+*apikey.py
+*Apikey.py
+*ApiKey.py
 ~$*.xlsx
 non_stocked_items_*
 non_profitable_items*
-*TEMPLATE*

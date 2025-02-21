@@ -3,8 +3,10 @@ from scripts.marketplacetf import *
 from scripts.lootfarm import *
 from scripts.backpacktf import *
 from scripts.csgomarket import *
+from scripts.rates import *
 from datamanager.dataManager import *
 from datamanager.dataManegerUtils import *
+from scripts.csdeals import *
 
 import requests
 
@@ -112,6 +114,16 @@ class Optimization():
             print("Creating excel "+str(key))
             DataManegerService().dataToExcel(dataManegerUtils().PATH_CSGOMARKET+str(key)+dataManegerUtils.XSLX_EXTENSION, str(key), value)
 
+    def getCsdealsListProfitableItems(self, appId):
+        usdEur = RatesService().getUsdtoEur()
+        profitableCsdealsItems, profitableCsdealsItemsBuyOrder = CsdealsService().getRustProfitableItemsCsdeals(appId, usdEur)
 
+        # Save profitable items
+        DataManegerService().dataToExcel(dataManegerUtils().PATH_CSDEALS+dataManegerUtils().EXCEL_CSDEALS_TO_SCM+dataManegerUtils().XSLX_EXTENSION,
+                                        dataManegerUtils().RUST_PAGE,
+                                        profitableCsdealsItems)
         
+        DataManegerService().dataToExcel(dataManegerUtils().PATH_CSDEALS+dataManegerUtils().EXCEL_CSDEALS_TO_SCM_BUY_ORDERS+dataManegerUtils().XSLX_EXTENSION,
+                                        dataManegerUtils().RUST_PAGE,
+                                        profitableCsdealsItemsBuyOrder)
 

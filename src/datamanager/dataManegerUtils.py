@@ -5,6 +5,9 @@ class dataManegerUtils:
     EXCEL_CSDEALS_VOLUME = "bestRustItemsVolume"
     PATH_RUST_VOLUME = "rustVolume"
     RUST_PAGE = "RUST"
+    EXCEL_CSDEALS_TO_SCM = "csdeals_to_scm"
+    EXCEL_CSDEALS_TO_SCM_BUY_ORDERS = "csdeals_to_scm_buy_orders"
+
 
     PATH_MARKETPLACE = "../excels/marketplace/"
     MP_ITEMS = "mp_items"

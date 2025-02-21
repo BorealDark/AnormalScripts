@@ -26,10 +26,8 @@ parser.add_argument('-csm', "--csgomarket", help = "csgomarket <-> scm", require
 parser.add_argument('-csmfast', "--csgomarketfast", help = "csgomarket <-> scm FAST (NO CSGOMARKET SALES VOLUME)", required=False, action='store_true')
 parser.add_argument('-csminstant', "--csgomarketinstant", help = "csgomarket <-> scm FAST (NO STEAM BUY ORDERS, NO CSGOMARKET SALES VOLUME)", required=False, action='store_true')
 
-
-
-
-
+#CS.DEALS
+parser.add_argument('-csdealsr', "--csdealsrust", help = "csdeals rust -> SCM", required=False, action='store_true')
 
 
 def parse():
@@ -87,4 +85,9 @@ if __name__ == '__main__':
     if(args.csgomarketinstant):
         print("Creating csgomarket-steam spreadsheet")
         Optimization().csgomarket(True, False)
+    
+    # CSDEALS
+    if(args.csdealsrust):
+        print("Generatin csdeals rust to scm spreadsheet")
+        Optimization().getCsdealsListProfitableItems(252490)
 
