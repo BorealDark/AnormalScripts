@@ -30,6 +30,14 @@ class CsdealsService:
                 if rustItem['marketname'] == rustScmPrice['market_hash_name']:
                     scmSafePrice7d = round(rustScmPrice['prices']['safe_ts']['last_7d']*usdEur, 2)
 
+                    salesWeeklyAvg = rustScmPrice['prices']['sold']['last_7d']
+                    salesDailyAVG = round(salesWeeklyAvg/7)
+
+                    if salesDailyAVG == None: salesDailyAVG = 0
+
+                    if salesDailyAVG < u.MINIMUM_VOLUME:
+                        break
+
                     scmData = CsdealsApi().getScmDataRust(rustItem['marketname'])
                     
                     if scmData.get("histogram"):
@@ -41,11 +49,6 @@ class CsdealsService:
 
 
                     rustItemPrice = round(float(rustItem['lowest_price'])*usdEur, 2)
-
-                    salesWeeklyAvg = rustScmPrice['prices']['sold']['last_7d']
-                    salesDailyAVG = round(salesWeeklyAvg/7)
-
-                    if salesDailyAVG == None: salesDailyAVG = 0
 
                     print(f"Item Name = {rustItem['marketname']} and SALES AVG = {salesDailyAVG}")
 
@@ -79,7 +82,7 @@ class CsdealsService:
                             profitableCsdealsItems = pd.concat([profitableCsdealsItems, newRow], ignore_index=True)
 
                         
-                    if scmProfitBuyOrder > u.MINIMUM_PROFIT_BUY_ORDER and salesDailyAVG > u.MINIMUM_VOLUME:
+                    if scmProfitBuyOrder > u.MINIMUM_PROFIT_BUY_ORDER and salesDailyAVG >= u.MINIMUM_VOLUME:
                         newRowBuyOrder = pd.DataFrame({u.ITEM_NAME: [rustItem['marketname']],
                                                 u.CSDEALS_PRICE: [rustItemPrice],
                                                 u.STEAM_PRICE_BUY_ORDER: [scmBuyOrder], 
