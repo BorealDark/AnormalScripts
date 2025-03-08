@@ -28,7 +28,7 @@ class LootFarmService:
         elif gameId == 440:
             min_price = u.MINIMUM_TF_PRICE
         else:
-            return pd.DataFrame(columns=[u.ITEM_NAME, u.LOOTFARM_PRICE, u.LOOTFARM_QUANTITY, u.RATE])
+            return pd.DataFrame(columns=[u.ITEM_NAME, u.LOOTFARM_PRICE, u.LOOTFARM_MAX, u.LOOTFARM_QUANTITY, u.RATE])
 
         # Recorrer los ítems y filtrar
         for lootfarmItem in lootFarmItems:
@@ -37,18 +37,19 @@ class LootFarmService:
                     u.ITEM_NAME: lootfarmItem['name'], 
                     u.LOOTFARM_PRICE: lootfarmItem['price'] / 100,
                     u.LOOTFARM_QUANTITY: lootfarmItem['have'],
+                    u.LOOTFARM_MAX: lootfarmItem['max'],
                     u.RATE: lootfarmItem['rate']
                 })
 
         # Convertir la lista en un DataFrame (más eficiente que concat en cada iteración)
-        return pd.DataFrame(rows, columns=[u.ITEM_NAME, u.LOOTFARM_PRICE, u.LOOTFARM_QUANTITY, u.RATE])
+        return pd.DataFrame(rows, columns=[u.ITEM_NAME, u.LOOTFARM_PRICE, u.LOOTFARM_MAX, u.LOOTFARM_QUANTITY, u.RATE])
 
     
     def getAllSteamPricesGame(self, gameId, isCompact, compactValue=None):
         return LootfarmApi().getAllSteamPricesGame(gameId, isCompact, compactValue)
     
 
-    def getProfitableLootfarmItems(self, lootFarmItemsReduced, SteamPrices, rateUSDEUR, gameId):
+    def getProfitableLootfarmItems(self, lootFarmItemsReduced, SteamPrices, csdealsPrices, rateUSDEUR, gameId):
         profitableLootfarmItems = []
 
         for index, row in lootFarmItemsReduced.iterrows():
@@ -58,6 +59,12 @@ class LootFarmService:
                     if steamItemPrice['market_hash_name'] == itemName:
                         priceTs = steamItemPrice['prices']['safe_ts']['last_24h']
                         priceLatest = steamItemPrice['prices']['latest']
+
+                        csdealsPrice = None
+                        for csdealsItem in csdealsPrices['response']['items']:
+                            if csdealsItem['marketname'] == itemName:
+                                csdealsPrice = float(csdealsItem['lowest_price'])
+                                break
                         
                         steamPrice = priceTs if priceTs != 0 else steamItemPrice['prices']['safe_ts']['last_7d']
                         steamPrice = round(steamPrice, 2)
@@ -75,13 +82,21 @@ class LootFarmService:
                         keyRate = u.KEY_PRICE_LOOTFARM / u.KEY_PRICE_USD
                         scmBalanceRate = round(keyRate / loss, 2)
 
+                        if csdealsPrice:
+                            csdealsToLootfarmRate = round((lootFarmPrice*0.97/csdealsPrice), 2)
+                        else:
+                            csdealsToLootfarmRate = None
+
                         profitableLootfarmItems.append({
                             u.ITEM_NAME: itemName,
                             u.STEAM_PRICE: steamPrice,
                             u.LOOTFARM_PRICE: lootFarmPrice,
+                            u.CSDEALS_PRICE: csdealsPrice,
                             u.VOLUME: math.ceil(salesAVG),
                             u.LOOTFARM_QUANTITY: row[u.LOOTFARM_QUANTITY],
-                            u.SCM_BALANCE_RATE: scmBalanceRate
+                            u.SCM_BALANCE_RATE: scmBalanceRate,
+                            u.CSDEALS_TO_LF_RATE: csdealsToLootfarmRate,
+                            u.HOW_MANY_CAN_DUMP_LF: max(0, row[u.LOOTFARM_MAX] - row[u.LOOTFARM_QUANTITY])
                         })
                         break  
             except Exception as e: 

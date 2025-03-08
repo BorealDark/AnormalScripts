@@ -15,8 +15,10 @@ SELL_PRICE = "sell_price"
 NAME = "name"
 STEAM_PRICE = "steam_price"
 LOOTFARM_PRICE = "lootfarm_price"
+CSDEALS_PRICE = "csdeals_price"
 PROFIT = "profit"
 LOOTFARM_QUANTITY = "lootfarm_quantity"
+LOOTFARM_MAX = "lootfarm_max"
 STEAM_SALES_QUANTITY = "steam_sales_quantity"
 VOLUME = "volume"
 ITEM_NAME = "item_name"
@@ -34,6 +36,8 @@ RATE = "rate"
 LOOTFARM_VALUE = 'lootfarm_value'
 STOCK_TO_SELL = 'stock_to_sell'
 SCM_BALANCE_RATE = 'scm_bal_rate'
+CSDEALS_TO_LF_RATE = 'csdeals_to_lf_rate'
+HOW_MANY_CAN_DUMP_LF = "how_many_can_dump_lf"
 
 
 def getCurrency(rates, currency):

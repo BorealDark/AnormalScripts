@@ -17,6 +17,9 @@ class CsdealsService:
     def getAllSteamPricesGame(self, gameId, isCompact, compactValue=None):
         return self.csdealsapi.getAllSteamPricesGame(gameId, isCompact, compactValue)
     
+    def getCsdealsPrice(self, gameId):
+        return self.csdealsapi.getCsdealsPrice(gameId)
+    
     def getRustProfitableItemsCsdeals(self, appId, usdEur):
         csdealsItems = self.csdealsapi.getCsdealsPrice(appId)
         rustScmPrices = self.getAllSteamPricesGame(appId, False)

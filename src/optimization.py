@@ -61,16 +61,19 @@ class Optimization():
         rates = DataManegerService().excelToData(dataManegerUtils.PATH_RATES+dataManegerUtils.RATES+dataManegerUtils.XSLX_EXTENSION, dataManegerUtils.RATES)
         rateUSDEUR = LootFarmService().getCurrency(rates, "USD/EUR")
 
+        csdealsPrices = CsdealsService().getCsdealsPrice(gameId)
+
         if (gameId == 252490): 
             #rustVolume = DataManegerService().excelToData(dataManegerUtils().PATH_CSDEALS+dataManegerUtils().PATH_RUST_VOLUME+dataManegerUtils().XSLX_EXTENSION, dataManegerUtils().RUST_PAGE)
             #profitableItemsAndVolume = LootFarmService().checkVolume(profitableItems, rustVolume)
             lootfarmRustItems = LootFarmService().getLootfarmRustItems()
             lootfarmRustItemsReduced = LootFarmService().reduceLootfarmItems(lootfarmRustItems, gameId)
+            print(lootfarmRustItemsReduced)
 
             rustSteamPrices = LootFarmService().getAllSteamPricesGame(gameId, False)
             #print (rustSteamPrices)
         
-            profitableRustItems = LootFarmService().getProfitableLootfarmItems(lootfarmRustItemsReduced, rustSteamPrices, rateUSDEUR, gameId)
+            profitableRustItems = LootFarmService().getProfitableLootfarmItems(lootfarmRustItemsReduced, rustSteamPrices, csdealsPrices, rateUSDEUR, gameId)
             #profitableItems = LootFarmService().lootFarmRust(rustSteamPrices)
 
             DataManegerService().dataToExcel(dataManegerUtils().PATH_LOOTFARM+dataManegerUtils().LOOTFARM_RUST+dataManegerUtils().XSLX_EXTENSION, dataManegerUtils().LOOTFARM_RUST, profitableRustItems)
@@ -84,7 +87,7 @@ class Optimization():
             lootFarmTfItemsReduced = LootFarmService().reduceLootfarmItems(lootFarmTfItems, gameId)
             tfSteamPrices = LootFarmService().getAllSteamPricesGame(gameId, False)
             
-            profitableTfItems = LootFarmService().getProfitableLootfarmItems(lootFarmTfItemsReduced, tfSteamPrices, rateUSDEUR, gameId)
+            profitableTfItems = LootFarmService().getProfitableLootfarmItems(lootFarmTfItemsReduced, tfSteamPrices, csdealsPrices, rateUSDEUR, gameId)
             DataManegerService().dataToExcel(dataManegerUtils().PATH_LOOTFARM+dataManegerUtils().LOOTFARM_TF+dataManegerUtils().XSLX_EXTENSION, dataManegerUtils().LOOTFARM_TF, profitableTfItems)
 
 
